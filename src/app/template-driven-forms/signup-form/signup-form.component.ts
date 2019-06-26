@@ -12,12 +12,9 @@ export class SignupFormComponent implements OnInit {
   countries: Array<string> = ['Ukraine', 'Armenia', 'Belarus', 'Hungary', 'Kazakhstan', 'Poland', 'Russia'];
   user: User = new User();
 
-  constructor() {
-  }
+  constructor() {}
 
-  ngOnInit() {
-
-  }
+  ngOnInit() {}
 
   onSave(signupForm: NgForm) {
     // Form model 
@@ -27,5 +24,3 @@ export class SignupFormComponent implements OnInit {
   }
 
 }
-
-
