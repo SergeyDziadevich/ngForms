@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { FormBuilder, FormGroup, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { User } from './../../models/user';
 
 @Component({
@@ -16,9 +16,6 @@ export class SignupReactiveFormComponent implements OnInit {
   constructor(private fb: FormBuilder) { }
 
   ngOnInit() {
-   // this.createForm();
-   //this.setFormValues();
-   // this.patchFormValues();
    this.buildForm();
   }
 
@@ -33,9 +30,15 @@ export class SignupReactiveFormComponent implements OnInit {
 
   private buildForm() {
     this.userForm = this.fb.group({
-      firstName: '',
-      lastName: {value: 'Zhyrytskyy', disabled: true},
-      email: [''],
+      firstName: ['', [Validators.required, Validators.minLength(3)]],
+      lastName: [
+        { value: 'Dziadevich', disabled: false },
+        [Validators.required, Validators.maxLength(50)]
+      ],
+      email: [
+        '',
+        [Validators.required, Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+'), Validators.email]
+      ],
       sendProducts: true
     });
   }
@@ -53,7 +56,7 @@ export class SignupReactiveFormComponent implements OnInit {
     this.userForm.setValue({
       firstName: 'Sergey',
       lastName: 'Dziadevich',
-      email: 'sergey_dziadevich@epam.com',
+      email: 'developersiteweb@gmail.com',
       sendProducts: false
     });
   }
