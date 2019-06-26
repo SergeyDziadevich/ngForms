@@ -12,8 +12,12 @@ export class SignupReactiveFormComponent implements OnInit {
   countries: Array<string> = ['Ukraine', 'Armenia', 'Belarus', 'Hungary', 'Kazakhstan', 'Poland', 'Russia'];
   user: User = new User();
   userForm: FormGroup;
+  placeholder = {
+    email: 'Email (required)',
+    phone: 'Phone'
+  };
 
-  constructor(private fb: FormBuilder) { }
+  constructor(private fb: FormBuilder) {}
 
   ngOnInit() {
    this.buildForm();
@@ -28,6 +32,29 @@ export class SignupReactiveFormComponent implements OnInit {
     console.log(`Saved: ${JSON.stringify(this.userForm.getRawValue())}`);
   }
 
+  onSetNotification(notifyVia: string) {
+    const phoneControl = this.userForm.get('phone');
+    const emailControl = this.userForm.get('email');
+
+    if (notifyVia === 'text') {
+      phoneControl.setValidators(Validators.required);
+      emailControl.clearValidators();
+      this.placeholder.email = 'Email';
+      this.placeholder.phone = 'Phone (required)';
+    } else {
+      emailControl.setValidators( [
+      Validators.required,
+      Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+'),
+      Validators.email
+      ]);
+      phoneControl.clearValidators();
+      this.placeholder.email = 'Email (required)';
+      this.placeholder.phone = 'Phone';
+    }
+    phoneControl.updateValueAndValidity();
+    emailControl.updateValueAndValidity();
+ }
+
   private buildForm() {
     this.userForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(3)]],
@@ -39,6 +66,8 @@ export class SignupReactiveFormComponent implements OnInit {
         '',
         [Validators.required, Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+'), Validators.email]
       ],
+      phone: '',
+      notification: 'email',
       sendProducts: true
     });
   }
