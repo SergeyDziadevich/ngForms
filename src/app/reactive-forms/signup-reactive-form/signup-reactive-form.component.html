@@ -50,8 +50,7 @@
 				<div formGroupName="emailGroup" 
 					[ngClass]="{'has-error': userForm.get('emailGroup').errors}">
 
-					<div class="form-group"
-						[ngClass]="{'has-error': (userForm.get('emailGroup.email').touched || userForm.get('emailGroup.email').dirty) && userForm.get('emailGroup.email').invalid }">
+					<div class="form-group"	[ngClass]="{'has-error': validationMessage}">
 							<label class="col-md-2 control-label" for="emailId">Email</label>
 		
 							<div class="col-md-8">
@@ -60,8 +59,9 @@
 									type="email" 
 									placeholder={{placeholder.email}}
 									formControlName="email"
-									appAsyncEmailValidator />
-									<span class="help-block" *ngIf="(userForm.get('emailGroup.email').touched || userForm.get('emailGroup.email').dirty) && userForm.get('emailGroup.email').errors">
+									appAsyncEmailValidator 
+									(blur)="onBlur()" />
+									<!-- <span class="help-block" *ngIf="(userForm.get('emailGroup.email').touched || userForm.get('emailGroup.email').dirty) && userForm.get('emailGroup.email').errors">
 										<span *ngIf="userForm.get('emailGroup.email').hasError('required')">
 											Please enter your email address.
 										</span>
@@ -74,7 +74,11 @@
 										<span *ngIf="userForm.get('emailGroup.email').hasError('asyncEmailInvalid')">
 											This email already exists. Please enter other email address.
 										</span>										
-									</span>
+									</span> -->
+									<span class="help-block" *ngIf="validationMessage">
+											{{ validationMessage }}
+								 </span>
+
 							</div>
 						</div>
 		
@@ -131,14 +135,12 @@
 							<label class="radio-online">
 							<input type="radio"
 								value="email"
-								formControlName="notification"
-								(click)="onSetNotification('email')">Email
+								formControlName="notification">Email
 							</label>
 							<label class="radio-online">
 							<input type="radio"
 								value="text"
-								formControlName="notification" 
-								(click)="onSetNotification('text')">Text
+								formControlName="notification">Text
 							</label>
 					</div>
 				</div>

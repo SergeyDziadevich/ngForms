@@ -1,6 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 
-import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl, Validators, AbstractControl } from '@angular/forms';
+
+import { Subscription } from 'rxjs';
+
 import { User } from './../../models/user';
 import { CustomValidators } from './../../validators';
 
@@ -9,21 +12,44 @@ import { CustomValidators } from './../../validators';
   templateUrl: './signup-reactive-form.component.html',
   styleUrls: ['./signup-reactive-form.component.css']
 })
-export class SignupReactiveFormComponent implements OnInit {
+export class SignupReactiveFormComponent implements OnInit, OnDestroy {
   countries: Array<string> = ['Ukraine', 'Armenia', 'Belarus', 'Hungary', 'Kazakhstan', 'Poland', 'Russia'];
   user: User = new User();
   userForm: FormGroup;
+  validationMessage: string;
   placeholder = {
     email: 'Email (required)',
     confirmEmail: 'Confirm Email (required)',
     phone: 'Phone'
   };
 
+  private sub: Subscription;
+  private validationMessagesMap = {
+    email: {
+      required: 'Please enter your email address.',
+      pattern: 'Please enter a valid email address.',
+      email: 'Please enter a valid email address.',
+      asyncEmailInvalid:
+        'This email already exists. Please enter other email address.'
+    }
+  };
+
+
   constructor(private fb: FormBuilder) {}
 
   ngOnInit() {
    // this.createForm();
    this.buildForm();
+   this.watchValueChanges();
+  }
+
+  ngOnDestroy() {
+    this.sub.unsubscribe();
+  }
+
+  onBlur() {
+    const emailControl = this.userForm.get('emailGroup.email');
+    this.setValidationMessage(emailControl, 'email');
   }
 
   onSave() {
@@ -35,7 +61,17 @@ export class SignupReactiveFormComponent implements OnInit {
     console.log(`Saved: ${JSON.stringify(this.userForm.getRawValue())}`);
   }
 
-  onSetNotification(notifyVia: string) {
+  private setValidationMessage(c: AbstractControl, controlName: string) {
+    this.validationMessage = '';
+
+    if ((c.touched || c.dirty) && c.errors) {
+      this.validationMessage = Object.keys(c.errors)
+        .map(key => this.validationMessagesMap[controlName][key])
+        .join(' ');
+    }
+  }
+
+  private setNotification(notifyVia: string) {
     const controls = new Map();
     controls.set('phoneControl', this.userForm.get('phone'));
     controls.set('emailGroup', this.userForm.get('emailGroup'));
@@ -138,4 +174,18 @@ export class SignupReactiveFormComponent implements OnInit {
     });
   }
 
+  private watchValueChanges() {
+    this.sub = this.userForm
+      .get('notification').valueChanges
+      .subscribe(value => this.setNotification(value));
+
+    const emailControl = this.userForm.get('emailGroup.email');
+    const sub = emailControl.valueChanges.subscribe(value =>
+      this.setValidationMessage(emailControl, 'email')
+    );
+
+    this.sub.add(sub);
+  
+  }
+ 
 }
