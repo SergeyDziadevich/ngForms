@@ -16,7 +16,6 @@ export function checkServiceLevel(
   return null;
 }
 
-
 export class CustomValidators {
   static serviceLevel(c: AbstractControl): { [key: string]: boolean } | null {
     console.log('Validator: serviceLevel is called');
@@ -27,6 +26,21 @@ export class CustomValidators {
     return (c: AbstractControl): { [key: string]: boolean } | null => {
       return checkServiceLevel(c, min, max);
     };
+  }
+
+  static emailMatcher(c: AbstractControl): { [key: string]: boolean } | null {
+    const emailControl = c.get('email');
+    const emailConfirmControl = c.get('confirmEmail');
+
+    if (emailControl.pristine || emailConfirmControl.pristine) {
+      return null;
+    }
+
+    if (emailControl.value === emailConfirmControl.value) {
+      return null;
+    }
+
+    return { 'emailMatch': true };
   }
 
 }

@@ -15,6 +15,7 @@ export class SignupReactiveFormComponent implements OnInit {
   userForm: FormGroup;
   placeholder = {
     email: 'Email (required)',
+    confirmEmail: 'Confirm Email (required)',
     phone: 'Phone'
   };
 
@@ -35,27 +36,47 @@ export class SignupReactiveFormComponent implements OnInit {
   }
 
   onSetNotification(notifyVia: string) {
-    const phoneControl = this.userForm.get('phone');
-    const emailControl = this.userForm.get('email');
+    const controls = new Map();
+    controls.set('phoneControl', this.userForm.get('phone'));
+    controls.set('emailGroup', this.userForm.get('emailGroup'));
+    controls.set('emailControl', this.userForm.get('emailGroup.email'));
+    controls.set(
+      'confirmEmailControl',
+      this.userForm.get('emailGroup.confirmEmail')
+    );
 
     if (notifyVia === 'text') {
-      phoneControl.setValidators(Validators.required);
-      emailControl.clearValidators();
-      this.placeholder.email = 'Email';
-      this.placeholder.phone = 'Phone (required)';
+      controls.get('phoneControl').setValidators(Validators.required);
+      controls.forEach(
+        (control, index) =>
+          index !== 'phoneControl' && control.clearValidators()
+      );
+
+      this.placeholder = {
+        phone: 'Phone (required)',
+        email: 'Email',
+        confirmEmail: 'Confirm Email'
+      };
     } else {
-      emailControl.setValidators( [
-      Validators.required,
-      Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+'),
-      Validators.email
-      ]);
-      phoneControl.clearValidators();
-      this.placeholder.email = 'Email (required)';
-      this.placeholder.phone = 'Phone';
+      controls
+        .get('emailControl')
+        .setValidators([
+          Validators.required,
+          Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+'),
+          Validators.email
+        ]);
+      controls.get('confirmEmailControl').setValidators([Validators.required]);
+      controls.get('emailGroup').setValidators([CustomValidators.emailMatcher]);
+      controls.get('phoneControl').clearValidators();
+
+      this.placeholder = {
+        phone: 'Phone',
+        email: 'Email (required)',
+        confirmEmail: 'Confirm Email (required)'
+      };
     }
-    phoneControl.updateValueAndValidity();
-    emailControl.updateValueAndValidity();
- }
+    controls.forEach(control => control.updateValueAndValidity());
+  }
 
   private buildForm() {
     this.userForm = this.fb.group({
@@ -64,10 +85,17 @@ export class SignupReactiveFormComponent implements OnInit {
         { value: 'Dziadevich', disabled: false },
         [Validators.required, Validators.maxLength(50)]
       ],
-      email: [
-        '',
-        [Validators.required, Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+'), Validators.email]
-      ],
+      // email: [
+      //   '',
+      //   [Validators.required, Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+'), Validators.email]
+      // ],
+      // confirmEmail: ['', Validators.required],
+      emailGroup: this.fb.group({
+        email: ['',
+          [Validators.required, Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+'), Validators.email]
+        ],
+        confirmEmail: ['', Validators.required],
+      }, {validator: CustomValidators.emailMatcher}),
       phone: '',
       notification: 'email',
       //serviceLevel: ['', CustomValidators.serviceLevelRange(1, 3)],
